@@ -9,104 +9,41 @@ void FastAerialTrainer::SetImGuiContext(uintptr_t ctx) {
 	ImGui::SetCurrentContext(reinterpret_cast<ImGuiContext*>(ctx));
 }
 
+static void ColorPicker(const char* label, LinearColor* color) {
+	LinearColor col = (*color) / 255;
+	ImGui::ColorEdit4(label, &col.R, ImGuiColorEditFlags_AlphaBar);
+	*color = col * 255;
+}
+
+static void ColorPickerWithoutAlpha(const char* label, LinearColor* color) {
+	LinearColor col = (*color) / 255;
+	ImGui::ColorEdit3(label, &col.R);
+	*color = col * 255;
+}
+
+static void PercentageSlider(const char* label, float* value, float max = 1.f) {
+	float x = (*value) * 100;
+	ImGui::SliderFloat(label, &x, 0, 100 * max, "%.1f %%");
+	*value = x / 100;
+}
+
+
 // Render the plugin settings here
 // This will show up in bakkesmod when the plugin is loaded at
 //  f2 -> plugins -> FastAerialTrainer
-void FastAerialTrainer::RenderSettings() 
+void FastAerialTrainer::RenderSettings()
 {
-	ImGui::Text("First Jump Duration Bar :");
-
-	ImGui::NewLine();
-	ImGui::PushID(0);
-
-	ImGui::SliderInt("Bar Location X", &JumpDuration_Bar_Pos.X, 0, 1920);
-	ImGui::SliderInt("Bar Location Y", &JumpDuration_Bar_Pos.Y, 0, 1080);
-	ImGui::SliderInt("Bar Size X", &JumpDuration_Bar_Length, 0, 1000);
-	ImGui::SliderInt("Bar Size Y", &JumpDuration_Bar_Height, 0, 100);
-	ImGui::SliderInt("Backgroud Bar Opacity", &JumpDuration_BackgroudBar_Opacity, 0, 255);
-	ImGui::SliderInt("Value Bar Opacity", &JumpDuration_ValueBar_Opacity, 0, 255);
-	ImGui::InputInt("Highest Value", &JumpDuration_HighestValue);
-
-	ImGui::PopID();
-
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::NewLine();
-
-	ImGui::Text("Time Between First And Double Jump :");
-
-	ImGui::NewLine();
-	ImGui::PushID(1);
-
-	ImGui::SliderInt("Bar Location X", &DoubleJumpDuration_Bar_Pos.X, 0, 1920);
-	ImGui::SliderInt("Bar Location Y", &DoubleJumpDuration_Bar_Pos.Y, 0, 1080);
-	ImGui::SliderInt("Bar Size X", &DoubleJumpDuration_Bar_Length, 0, 1000);
-	ImGui::SliderInt("Bar Size Y", &DoubleJumpDuration_Bar_Height, 0, 100);
-	ImGui::SliderInt("Backgroud Bar Opacity", &DoubleJumpDuration_BackgroudBar_Opacity, 0, 255);
-	ImGui::SliderInt("Value Bar Opacity", &DoubleJumpDuration_ValueBar_Opacity, 0, 255);
-	ImGui::InputInt("Highest Value", &DoubleJumpDuration_HighestValue);
-
-	ImGui::PopID();
+	ImGui::DragInt("GUI Position X", &GuiPosition.X);
+	ImGui::DragInt("GUI Position Y", &GuiPosition.Y);
+	ImGui::DragInt("GUI Size", &GuiSize);
+	ColorPicker("Background Color", &GuiColorBackground);
+	PercentageSlider("Color Preview Opacity", &GuiColorPreviewOpacity, 0.5);
+	ColorPicker("Success Color", &GuiColorSuccess);
+	ColorPicker("Warning Color", &GuiColorWarning);
+	ColorPicker("Failure Color", &GuiColorFailure);
+	ImGui::DragInt("First Jump Hold - Highest Value", &JumpDuration_HighestValue, 1.f, 1, INT_MAX);
+	ImGui::DragInt("Time to Double Jump - Highest Value", &DoubleJumpDuration_HighestValue, 1.f, 1, INT_MAX);
+	ImGui::Checkbox("Draw Pitch History", &GuiDrawPitchHistory);
+	ColorPickerWithoutAlpha("Pitch History Color - Boosting", &GuiPitchHistoryColorBoost);
+	ColorPickerWithoutAlpha("Pitch History Color - No Boost", &GuiPitchHistoryColor);
 }
-
-/*
-// Do ImGui rendering here
-void FastAerialTrainer::Render()
-{
-	if (!ImGui::Begin(menuTitle_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None))
-	{
-		// Early out if the window is collapsed, as an optimization.
-		ImGui::End();
-		return;
-	}
-
-	ImGui::End();
-
-	if (!isWindowOpen_)
-	{
-		cvarManager->executeCommand("togglemenu " + GetMenuName());
-	}
-}
-
-// Name of the menu that is used to toggle the window.
-std::string FastAerialTrainer::GetMenuName()
-{
-	return "FastAerialTrainer";
-}
-
-// Title to give the menu
-std::string FastAerialTrainer::GetMenuTitle()
-{
-	return menuTitle_;
-}
-
-// Don't call this yourself, BM will call this function with a pointer to the current ImGui context
-void FastAerialTrainer::SetImGuiContext(uintptr_t ctx)
-{
-	ImGui::SetCurrentContext(reinterpret_cast<ImGuiContext*>(ctx));
-}
-
-// Should events such as mouse clicks/key inputs be blocked so they won't reach the game
-bool FastAerialTrainer::ShouldBlockInput()
-{
-	return ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
-}
-
-// Return true if window should be interactive
-bool FastAerialTrainer::IsActiveOverlay()
-{
-	return true;
-}
-
-// Called when window is opened
-void FastAerialTrainer::OnOpen()
-{
-	isWindowOpen_ = true;
-}
-
-// Called when window is closed
-void FastAerialTrainer::OnClose()
-{
-	isWindowOpen_ = false;
-}
-*/

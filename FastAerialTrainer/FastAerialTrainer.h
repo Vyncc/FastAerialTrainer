@@ -4,132 +4,88 @@
 #include "bakkesmod/plugin/pluginwindow.h"
 #include "bakkesmod/plugin/PluginSettingsWindow.h"
 
-#include <chrono>
-
 #include "version.h"
 constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
 
 struct Range
 {
-	Vector2 range;
-	int red;
-	int green;
-	int blue;
-
-	Range(Vector2 _range, int _red, int _green, int _blue) {
-		range = _range;
-		red = _red;
-		green = _green;
-		blue = _blue;
-	}
+	int min;
+	int max;
+	LinearColor* color;
 };
 
-struct Rec
+struct InputHistory
 {
-	std::chrono::steady_clock::time_point startTime;
-	std::chrono::steady_clock::time_point stopTime;
-	bool stopTime_HasValue = false;
-	int GetDuration() {
-		if (!stopTime_HasValue)
-		{
-			return 0;
-		}
-		else
-		{
-			return std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count();
-		}
-	}
+	float pitch;
+	bool boost;
 };
 
-class FastAerialTrainer: public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::Plugin::PluginSettingsWindow/*, public BakkesMod::Plugin::PluginWindow*/
+class FastAerialTrainer : public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::Plugin::PluginSettingsWindow
 {
-
-	//std::shared_ptr<bool> enabled;
-
+	// Measuring
 
 	bool HoldingFirstJump = false;
-	std::chrono::steady_clock::time_point holdFirstJumpStartTime;
-	std::chrono::steady_clock::time_point holdFirstJumpStopTime;
-	int holdFirstJumpDuration;
+	float holdFirstJumpStartTime;
+	float holdFirstJumpStopTime;
+	float holdFirstJumpDuration;
 
-	std::chrono::steady_clock::time_point DoubleJumpPressedTime;
-	int TimeBetweenFirstAndDoubleJump;
-
-	Vector2 JumpDuration_Bar_Pos = { 570, 12 };
-	int JumpDuration_Bar_Length = 825;
-	int JumpDuration_Bar_Height = 30;
-	int JumpDuration_BackgroudBar_Opacity = 150;
-	int JumpDuration_ValueBar_Opacity = 210;
-	int JumpDuration_HighestValue = 300;
-	//std::vector<int> JumpDuration_RangeList = { 140, 180, 220, 260 };
-	std::vector<Range> JumpDuration_RangeList = 
-	{ 
-		Range(Vector2{0, 180}, 255, 0, 0), //red
-		Range(Vector2{181, 195}, 255, 255, 0), //yellow
-		Range(Vector2{196, 225}, 0, 255, 0), //green
-		Range(Vector2{226, 260}, 255, 255, 0) //yellow
-	};
-
-
-	Vector2 DoubleJumpDuration_Bar_Pos = { 570, 86 };
-	int DoubleJumpDuration_Bar_Length = 825;
-	int DoubleJumpDuration_Bar_Height = 30;
-	int DoubleJumpDuration_BackgroudBar_Opacity = 130;
-	int DoubleJumpDuration_ValueBar_Opacity = 224;
-	int DoubleJumpDuration_HighestValue = 130;
-	//std::vector<int> DoubleJumpDuration_RangeList = { 50, 70, 90, 110 };
-	std::vector<Range> DoubleJumpDuration_RangeList =
-	{
-		Range(Vector2{0, 50}, 255, 0, 0), //red
-		Range(Vector2{51, 70}, 255, 255, 0), //yellow
-		Range(Vector2{71, 90}, 0, 255, 0), //green
-		Range(Vector2{91, 110}, 255, 255, 0) //yellow
-	};
-
+	float DoubleJumpPressedTime;
+	float TimeBetweenFirstAndDoubleJump;
 
 	bool checkHoldingJoystickBack = false;
-	bool wasHoldingJoystickBack = false;
-	float holdJoystickBackThreshold = 0.1;
-	std::chrono::steady_clock::time_point holdJoystickBackStartTime;
-	std::chrono::steady_clock::time_point holdJoystickBackStopTime;
-	int HoldingJoystickBackDuration;
-	std::vector<Rec> JoystickBackDurations;
+	float lastTickTime;
+	float HoldingJoystickBackDuration;
+	std::vector<InputHistory> inputHistory;
+
+	float totalJumpTime;
 
 
-	int totalJumpTime;
+	// Styling
+
+	Vector2 GuiPosition = { 570, 12 };
+	int GuiSize = 825;
+	Vector2 BarSize() { return { GuiSize, GuiSize / 24 }; }
+	Vector2 Offset() { return { 0, GuiSize / 10 }; }
+	float FontSize() { return GuiSize / 350.f; }
+	float GuiColorPreviewOpacity = 0.2;
+	LinearColor GuiColorBackground = LinearColor(255, 255, 255, 150);
+	LinearColor GuiColorSuccess = LinearColor(0, 0, 255, 210);
+	LinearColor GuiColorWarning = LinearColor(255, 255, 0, 210);
+	LinearColor GuiColorFailure = LinearColor(255, 0, 0, 210);
+	std::vector<Range> JumpDuration_RangeList =
+	{
+		Range{ 0, 180, &GuiColorFailure },
+		Range{ 180, 195, &GuiColorWarning },
+		Range{ 195, 225, &GuiColorSuccess },
+		Range{ 225, 260, &GuiColorWarning },
+		Range{ 260, INT_MAX, &GuiColorFailure }
+	};
+	int JumpDuration_HighestValue = 300;
+	std::vector<Range> DoubleJumpDuration_RangeList =
+	{
+		Range{ 0, 75, &GuiColorSuccess },
+		Range{ 75, 110, &GuiColorWarning },
+		Range{ 110, INT_MAX, &GuiColorFailure }
+	};
+	int DoubleJumpDuration_HighestValue = 130;
+	LinearColor GuiPitchHistoryColor = LinearColor(240, 240, 240, 255);
+	LinearColor GuiPitchHistoryColorBoost = LinearColor(240, 80, 80, 255);
+	bool GuiDrawPitchHistory = true;
 
 
-	void DrawBar(CanvasWrapper canvas, std::string text, int& value, Vector2 barPos, int sizeX, int sizeY, int backgroudBarOpacity, int valueBarOpacity, int highestValue, std::vector<Range>& rangeList);
+	// Methods
 
-	void OnTick();
+	float GetCurrentTime();
+	void OnTick(CarWrapper car, ControllerInput input);
+
 	void RenderCanvas(CanvasWrapper canvas);
+	void DrawBar(CanvasWrapper& canvas, std::string text, float value, float maxValue, Vector2 barPos, Vector2 barSize, LinearColor backgroundColor, std::vector<Range>& colorRanges);
+	void DrawPitchHistory(CanvasWrapper& canvas);
 
-	//Boilerplate
 	virtual void onLoad();
 	virtual void onUnload();
 
-	// Inherited via PluginSettingsWindow
 	void RenderSettings() override;
 	std::string GetPluginName() override;
 	void SetImGuiContext(uintptr_t ctx) override;
-	
-
-	// Inherited via PluginWindow
-	/*
-
-	bool isWindowOpen_ = false;
-	bool isMinimized_ = false;
-	std::string menuTitle_ = "FastAerialTrainer";
-
-	virtual void Render() override;
-	virtual std::string GetMenuName() override;
-	virtual std::string GetMenuTitle() override;
-	virtual void SetImGuiContext(uintptr_t ctx) override;
-	virtual bool ShouldBlockInput() override;
-	virtual bool IsActiveOverlay() override;
-	virtual void OnOpen() override;
-	virtual void OnClose() override;
-	
-	*/
 };
-
