@@ -7,6 +7,21 @@
 #include "version.h"
 constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
 
+constexpr auto PLUGIN_ENABLED = "fast_aerial_trainer_enabled";
+constexpr auto GUI_POSITION_X = "fast_aerial_trainer_gui_pos_x";
+constexpr auto GUI_POSITION_Y = "fast_aerial_trainer_gui_pos_y";
+constexpr auto GUI_SIZE = "fast_aerial_trainer_gui_size";
+constexpr auto GUI_BACKGROUND_COLOR = "fast_aerial_trainer_gui_background_color";
+constexpr auto GUI_PREVIEW_OPACTIY = "fast_aerial_trainer_gui_preview_opactiy";
+constexpr auto GUI_COLOR_SUCCESS = "fast_aerial_trainer_gui_color_success";
+constexpr auto GUI_COLOR_WARNING = "fast_aerial_trainer_gui_color_warning";
+constexpr auto GUI_COLOR_FAILURE = "fast_aerial_trainer_gui_color_failure";
+constexpr auto GUI_JUMP_MAX = "fast_aerial_trainer_gui_jump_max";
+constexpr auto GUI_DOUBLE_JUMP_MAX = "fast_aerial_trainer_gui_double_jump_max";
+constexpr auto GUI_DRAW_HISTORY = "fast_aerial_trainer_gui_draw_history";
+constexpr auto GUI_COLOR_HISTORY = "fast_aerial_trainer_gui_color_history";
+constexpr auto GUI_COLOR_HISTORY_BOOST = "fast_aerial_trainer_gui_color_history_boost";
+
 struct Range
 {
 	int min;
@@ -22,6 +37,8 @@ struct InputHistory
 
 class FastAerialTrainer : public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::Plugin::PluginSettingsWindow
 {
+	bool PluginEnabled = true;
+
 	// Measuring
 
 	bool HoldingFirstJump = false;
@@ -42,8 +59,8 @@ class FastAerialTrainer : public BakkesMod::Plugin::BakkesModPlugin, public Bakk
 
 	// Styling
 
-	Vector2 GuiPosition = { 570, 12 };
-	int GuiSize = 825;
+	Vector2 GuiPosition = { 610, 16 };
+	int GuiSize = 700;
 	Vector2 BarSize() { return { GuiSize, GuiSize / 24 }; }
 	Vector2 Offset() { return { 0, GuiSize / 10 }; }
 	float FontSize() { return GuiSize / 350.f; }
@@ -75,8 +92,10 @@ class FastAerialTrainer : public BakkesMod::Plugin::BakkesModPlugin, public Bakk
 
 	// Methods
 
+	bool IsActive();
+
 	float GetCurrentTime();
-	void OnTick(CarWrapper car, ControllerInput input);
+	void OnTick(CarWrapper car);
 
 	void RenderCanvas(CanvasWrapper canvas);
 	void DrawBar(CanvasWrapper& canvas, std::string text, float value, float maxValue, Vector2 barPos, Vector2 barSize, LinearColor backgroundColor, std::vector<Range>& colorRanges);

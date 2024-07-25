@@ -4,7 +4,7 @@
 #include <sstream>
 
 
-BAKKESMOD_PLUGIN(FastAerialTrainer, "FastAerialTrainer", plugin_version, PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(FastAerialTrainer, "FastAerialTrainer", plugin_version, PLUGINTYPE_FREEPLAY);
 
 std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
 
@@ -16,23 +16,67 @@ float FastAerialTrainer::GetCurrentTime() {
 	return world.GetTimeSeconds();
 }
 
+static std::string to_string(LinearColor col) {
+	return "("
+		+ std::to_string((int)col.R) + ","
+		+ std::to_string((int)col.G) + ","
+		+ std::to_string((int)col.B) + ","
+		+ std::to_string((int)col.A) + ")";
+}
+
 void FastAerialTrainer::onLoad()
 {
 	_globalCvarManager = cvarManager;
 
+	auto registerIntCvar = [this](std::string label, int& value)
+		{
+			cvarManager->registerCvar(label, std::to_string(value), "", false)
+				.addOnValueChanged([&](std::string oldValue, CVarWrapper cvar) { value = cvar.getIntValue(); });
+		};
+	auto registerFloatCvar = [this](std::string label, float& value)
+		{
+			cvarManager->registerCvar(label, std::to_string(value), "", false)
+				.addOnValueChanged([&](std::string oldValue, CVarWrapper cvar) { value = cvar.getFloatValue(); });
+		};
+	auto registerBoolCvar = [this](std::string label, bool& value)
+		{
+			cvarManager->registerCvar(label, std::to_string(value), "", false)
+				.addOnValueChanged([&](std::string oldValue, CVarWrapper cvar) { value = cvar.getBoolValue(); });
+		};
+	auto registerColorCvar = [this](std::string label, LinearColor& value)
+		{
+			cvarManager->registerCvar(label, to_string(value), "", false)
+				.addOnValueChanged([&](std::string oldValue, CVarWrapper cvar) { value = cvar.getColorValue(); });
+		};
+
+	registerBoolCvar(PLUGIN_ENABLED, PluginEnabled);
+	registerIntCvar(GUI_POSITION_X, GuiPosition.X);
+	registerIntCvar(GUI_POSITION_Y, GuiPosition.Y);
+	registerIntCvar(GUI_SIZE, GuiSize);
+	registerIntCvar(GUI_JUMP_MAX, JumpDuration_HighestValue);
+	registerIntCvar(GUI_DOUBLE_JUMP_MAX, DoubleJumpDuration_HighestValue);
+	registerFloatCvar(GUI_PREVIEW_OPACTIY, GuiColorPreviewOpacity);
+	registerBoolCvar(GUI_DRAW_HISTORY, GuiDrawPitchHistory);
+	registerColorCvar(GUI_BACKGROUND_COLOR, GuiColorBackground);
+	registerColorCvar(GUI_COLOR_SUCCESS, GuiColorSuccess);
+	registerColorCvar(GUI_COLOR_WARNING, GuiColorWarning);
+	registerColorCvar(GUI_COLOR_FAILURE, GuiColorFailure);
+	registerColorCvar(GUI_COLOR_HISTORY, GuiPitchHistoryColor);
+	registerColorCvar(GUI_COLOR_HISTORY_BOOST, GuiPitchHistoryColorBoost);
+
+
 	gameWrapper->RegisterDrawable(
-		[this](CanvasWrapper canvas) 
+		[this](CanvasWrapper canvas)
 		{
 			FastAerialTrainer::RenderCanvas(canvas);
 		}
 	);
 
 	gameWrapper->HookEventWithCaller<CarWrapper>(
-		"Function TAGame.Car_TA.SetVehicleInput", 
+		"Function TAGame.Car_TA.SetVehicleInput",
 		[this](CarWrapper car, void* params, std::string eventName)
 		{
-			ControllerInput* input = (ControllerInput*) params;
-			FastAerialTrainer::OnTick(car, *input);
+			FastAerialTrainer::OnTick(car);
 		}
 	);
 
@@ -83,8 +127,17 @@ void FastAerialTrainer::onLoad()
 	);
 }
 
-void FastAerialTrainer::OnTick(CarWrapper car, ControllerInput input)
+bool FastAerialTrainer::IsActive() {
+	return PluginEnabled
+		&& !gameWrapper->IsPaused()
+		&& (gameWrapper->IsInFreeplay() || gameWrapper->IsInCustomTraining());
+}
+
+void FastAerialTrainer::OnTick(CarWrapper car)
 {
+	if (!IsActive())
+		return;
+
 	float now = GetCurrentTime();
 
 	if (HoldingFirstJump)
@@ -105,6 +158,7 @@ void FastAerialTrainer::OnTick(CarWrapper car, ControllerInput input)
 	if (!car.HasFlip() || (car.IsOnGround() && !car.GetbJumped()))
 		checkHoldingJoystickBack = false;
 
+	ControllerInput input = car.GetInput();
 	if (checkHoldingJoystickBack)
 	{
 		float sensitivity = gameWrapper->GetSettings().GetGamepadSettings().AirControlSensitivity;
@@ -125,9 +179,7 @@ static std::string toPrecision(float x, int precision) {
 
 void FastAerialTrainer::RenderCanvas(CanvasWrapper canvas)
 {
-	if (gameWrapper->IsPaused())
-		return;
-	if (!gameWrapper->IsInFreeplay() && !gameWrapper->IsInCustomTraining())
+	if (!IsActive())
 		return;
 
 	DrawBar(
