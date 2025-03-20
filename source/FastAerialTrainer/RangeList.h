@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "bakkesmod/wrappers/wrapperstructs.h"
+struct LinearColor;
 
 struct Range
 {

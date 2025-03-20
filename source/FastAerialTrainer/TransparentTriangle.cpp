@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "TransparentTriangle.h"
 
-#include <memory>
+#include <cfloat>
 #include <cmath>
+#include <cstdlib>
+#include <memory>
 #include <utility>
 
 #include "bakkesmod/wrappers/wrapperstructs.h"
@@ -14,8 +16,9 @@ namespace VectorUtils
 	float distance(Vector2F v1, Vector2F v2);
 	float dot(Vector2F v1, Vector2F v2);
 	float determinant(Vector2F v1, Vector2F v2);
-	Vector2F normal(Vector2F v);
 	bool equals(Vector2F v1, Vector2F v2);
+	Vector2F normalize(Vector2F v);
+	Vector2F rotateLeft(Vector2F v);
 	Vector2F intersect(Vector2F v1, Vector2F v2, Vector2F w1, Vector2F w2);
 	Vector2F rotationCenter(Vector2F vOld, Vector2F vNew, Vector2F wOld, Vector2F wNew);
 }
@@ -32,7 +35,7 @@ TransparentTriangle::TransparentTriangle(std::shared_ptr<ImageWrapper> triangleI
 
 void TransparentTriangle::Render(CanvasWrapper canvas, Vector2F p1, Vector2F p2, Vector2F p3)
 {
-	// Fall back to opaque triangles when texture could not be loaded.
+	// Render an opaque triangle, if the texture failed to load.
 	if (!imageLoaded)
 	{
 		canvas.FillTriangle(p1, p2, p3);
@@ -40,24 +43,24 @@ void TransparentTriangle::Render(CanvasWrapper canvas, Vector2F p1, Vector2F p2,
 	}
 
 	// Determine `c` to be opposite of the longest side.
-	float d1 = distance(p1, p2);
-	float d2 = distance(p1, p3);
-	float d3 = distance(p2, p3);
+	float d1 = distance(p2, p3);
+	float d2 = distance(p3, p1);
+	float d3 = distance(p1, p2);
 	float longest = std::max({ d1, d2, d3 });
 	Vector2F a, b, c;
 	if (d1 == longest)
-		c = p3, a = p1, b = p2;
+		c = p1, a = p2, b = p3;
 	else if (d2 == longest)
 		c = p2, a = p3, b = p1;
 	else
-		c = p1, a = p2, b = p3;
+		c = p3, a = p1, b = p2;
 
 	// Make sure points are ordered counter-clockwise.
 	if (determinant(a - c, b - c) > 0)
 		std::swap(a, b);
 
 	// A right triangle can be rendered immediately.
-	if (dot(a - c, b - c) == 0)
+	if (std::abs(dot(normalize(a - c), normalize(b - c))) < FLT_EPSILON)
 	{
 		RenderRightTriangle(canvas, a, b, c);
 		return;
@@ -126,14 +129,20 @@ namespace VectorUtils
 		return v1.X * v2.Y - v1.Y * v2.X;
 	}
 
-	Vector2F normal(Vector2F v)
-	{
-		return Vector2F{ -v.Y, v.X };
-	}
-
 	bool equals(Vector2F v1, Vector2F v2)
 	{
 		return v1.X == v2.X && v1.Y == v2.Y;
+	}
+
+	Vector2F normalize(Vector2F v)
+	{
+		float magnitude = distance(Vector2F(), v);
+		return v / magnitude;
+	}
+
+	Vector2F rotateLeft(Vector2F v)
+	{
+		return Vector2F{ -v.Y, v.X };
 	}
 
 	Vector2F intersect(Vector2F v1, Vector2F v2, Vector2F w1, Vector2F w2)
@@ -156,8 +165,8 @@ namespace VectorUtils
 
 		auto vMid = (vOld + vNew) / 2;
 		auto wMid = (wOld + wNew) / 2;
-		auto vNormal = normal(vNew - vOld);
-		auto wNormal = normal(wNew - wOld);
+		auto vNormal = rotateLeft(vNew - vOld);
+		auto wNormal = rotateLeft(wNew - wOld);
 
 		return intersect(vMid, vMid + vNormal, wMid, wMid + wNormal);
 	}

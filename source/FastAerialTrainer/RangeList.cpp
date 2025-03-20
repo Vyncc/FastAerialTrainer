@@ -3,7 +3,12 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <sstream>
+#include <string>
 #include <vector>
+
+#include "bakkesmod/wrappers/wrapperstructs.h"
+#include "logging.h"
 
 RangeList::RangeList(std::vector<float> values, std::vector<LinearColor*> colors)
 {
