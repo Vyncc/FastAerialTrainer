@@ -45,13 +45,13 @@ void FastAerialTrainer::RenderSettings()
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip("For clearest text use multiples of 350 pixels.");
 
-	if (ImGui::Checkbox("Show First Jump Timing", &GuiShowFirstJump))
+	if (ImGui::Checkbox("Show Initial Jump Timing\nHow long did you hold the jump input initially?", &GuiShowFirstJump))
 		cvarManager->getCvar(GUI_SHOW_FIRST_JUMP).setValue(GuiShowFirstJump);
 
-	if (ImGui::Checkbox("Show Double Jump Timing", &GuiShowDoubleJump))
+	if (ImGui::Checkbox("Show Double Jump Timing\nHow long did it take you to press the jump input again after releasing it?", &GuiShowDoubleJump))
 		cvarManager->getCvar(GUI_SHOW_DOUBLE_JUMP).setValue(GuiShowDoubleJump);
 
-	if (ImGui::Checkbox("Show Total Jump Timing", &GuiShowTotalJump))
+	if (ImGui::Checkbox("Show Total Jump Timing\nHow long did it take you to press the jump input again after pressing it initially?", &GuiShowTotalJump))
 		cvarManager->getCvar(GUI_SHOW_TOTAL_JUMP).setValue(GuiShowTotalJump);
 
 	if (ImGui::Checkbox("Show Pitch Up Amount While Jumping", &GuiShowPitchAmount))
@@ -105,8 +105,8 @@ void FastAerialTrainer::RenderSettings()
 
 	SpacedSeparator();
 
-	ImGui::PushID("FirstJump");
-	ImGui::Text("First Jump Timing");
+	ImGui::PushID("InitialJump");
+	ImGui::Text("Initial Jump Timing");
 	ImGui::Spacing();
 	RenderRangePicker(
 		JumpDurationRanges,

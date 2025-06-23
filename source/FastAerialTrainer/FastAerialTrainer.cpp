@@ -301,7 +301,7 @@ void FastAerialTrainer::RenderCanvas(CanvasWrapper canvas)
 	if (GuiShowFirstJump)
 	{
 		DrawBar(
-			canvas, "Hold First Jump: ", HoldFirstJumpDuration * 1000,
+			canvas, "Initial Jump Duration: ", HoldFirstJumpDuration * 1000,
 			position, BarSize(),
 			GuiColorBackground, JumpDurationRanges
 		);
