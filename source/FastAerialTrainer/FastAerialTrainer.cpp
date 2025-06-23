@@ -452,18 +452,6 @@ void FastAerialTrainer::DrawPitchHistory(CanvasWrapper& canvas, Vector2F positio
 	);
 	innerBoxSize -= Vector2F{ textWidth, 0 };
 
-	canvas.SetColor(GuiColorBorder);
-	canvas.SetPosition(topLeft - borderWidth);
-	canvas.DrawBox(innerBoxSize + (2 * borderWidth));
-
-	if (GuiShowPitchDownInHistory)
-	{
-		canvas.SetColor(GuiColorBorder);
-		Vector2F start = topLeft - Vector2F{ borderWidth / 2.f, 0.f } + innerBoxSize * Vector2F{ 0.f, 0.5f };
-		Vector2F end = start + Vector2F{ borderWidth, 0.f } + innerBoxSize * Vector2F{ 1.f, 0.f };
-		canvas.DrawLine(start, end, borderWidth);
-	}
-
 	// Draw the pitch input graph.
 
 	canvas.SetColor(GuiPitchHistoryColor);
@@ -578,6 +566,20 @@ void FastAerialTrainer::DrawPitchHistory(CanvasWrapper& canvas, Vector2F positio
 			canvas.DrawLine(start, end, borderWidth);
 		}
 	}
+
+	// Draw border on top.
+
+	canvas.SetColor(GuiColorBorder);
+	canvas.SetPosition(topLeft - borderWidth);
+	canvas.DrawBox(innerBoxSize + (2 * borderWidth));
+
+	if (GuiShowPitchDownInHistory)
+	{
+		canvas.SetColor(GuiColorBorder);
+		Vector2F start = topLeft - Vector2F{ borderWidth / 2.f, 0.f } + innerBoxSize * Vector2F{ 0.f, 0.5f };
+		Vector2F end = start + Vector2F{ borderWidth, 0.f } + innerBoxSize * Vector2F{ 1.f, 0.f };
+		canvas.DrawLine(start, end, borderWidth);
+	}
 }
 
 void FastAerialTrainer::DrawBoostHistory(CanvasWrapper& canvas, Vector2F position)
@@ -597,10 +599,6 @@ void FastAerialTrainer::DrawBoostHistory(CanvasWrapper& canvas, Vector2F positio
 	);
 	innerBoxSize -= Vector2F{ textWidth, 0 };
 
-	canvas.SetColor(GuiColorBorder);
-	canvas.SetPosition(topLeft - borderWidth);
-	canvas.DrawBox(innerBoxSize + (2 * borderWidth));
-
 	int i = 0;
 	int size = (int)InputHistory.size();
 	for (InputHistoryItem input : InputHistory)
@@ -613,6 +611,10 @@ void FastAerialTrainer::DrawBoostHistory(CanvasWrapper& canvas, Vector2F positio
 		}
 		i++;
 	}
+
+	canvas.SetColor(GuiColorBorder);
+	canvas.SetPosition(topLeft - borderWidth);
+	canvas.DrawBox(innerBoxSize + (2 * borderWidth));
 }
 
 void FastAerialTrainer::onUnload()
