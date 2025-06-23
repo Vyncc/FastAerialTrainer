@@ -1,25 +1,63 @@
-# Fast Aerial Trainer
+# Fast Aerial Trainer / Jump Timing Trainer
 
-This plugin adds some useful infos about how well you did on your fast aerial takeoff.  
-Works in freeplay and custom training.
+This plugin shows some useful stats about your jump inputs.
+
+You can also use it to practice different jump-related mechanics like **fast aerials**, **speed-flips** or **wall-dashes**.
+
+Works in **freeplay**, **custom training** and with different **game-speeds**.
 
 ![fast-aerial-trainer-settings](https://github.com/user-attachments/assets/845e34a1-372f-4118-8d46-f0de880921c1)
 
-It is based on the plugin [Fast Aerial Trainer](https://bakkesplugins.com/plugins/view/406) made by Vync.
-
+It is based on the plugin [Fast Aerial Trainer](https://bakkesplugins.com/plugins/view/406) made by Vync.  
 The original plugin was featured in the video [Wall Dash, Zap Dash, Fast Aerial, & More | How to Play Rocket League](https://www.youtube.com/watch?v=zbW7jIav2e8&t=728s) by [Grifflicious](https://www.youtube.com/@Grifflicious).
+
+## How to Train Fast Aerials, Speed-Flips or Wall-Dashes
+
+You can easily configure this plugin to aim for different success metrics in the plugin settings UI.
+
+If you want to frequently change between different configurations, I recommend you use bindings or console aliases. Here's how:
+
+All settings can also be configured in the console (opened with `F6`).
+
+You can either paste the example commands below into the console, use them in the bindings tab or save them as an alias with `alias <your_alias> "<command>"` (so you can run the command `<your_alias>` in the console next time).  
+Feel free to adjust them however it's useful for you, for example by changing the success timings.
+
+**Example configuration for fast aerials**
+
+```
+fast_aerial_trainer_record_after_double_jump 0.5; fast_aerial_trainer_gui_show_first_jump 1; fast_aerial_trainer_gui_show_double_jump 1; fast_aerial_trainer_gui_show_total_jump 0; fast_aerial_trainer_gui_draw_pitch_history 1; fast_aerial_trainer_gui_draw_boost_history 1; fast_aerial_trainer_gui_jump_ranges '0,180,195,225,260,300'; fast_aerial_trainer_gui_double_jump_ranges '0,75,110,130'; 
+```
+
+**Example configuration for speed-flips**
+
+```
+fast_aerial_trainer_record_after_double_jump 0.2; fast_aerial_trainer_gui_show_first_jump 0; fast_aerial_trainer_gui_show_double_jump 0; fast_aerial_trainer_gui_show_total_jump 1; fast_aerial_trainer_gui_draw_pitch_history 1; fast_aerial_trainer_gui_draw_boost_history 1; fast_aerial_trainer_gui_total_jump_ranges '0,100,150,200'; 
+```
+
+**Example configuration for wall-dashes**
+
+```
+fast_aerial_trainer_gui_show_first_jump 0; fast_aerial_trainer_gui_show_double_jump 0; fast_aerial_trainer_gui_show_total_jump 1; fast_aerial_trainer_gui_draw_pitch_history 0; fast_aerial_trainer_gui_draw_boost_history 0; fast_aerial_trainer_gui_total_jump_ranges '0,75,90,120'; 
+```
+
 
 ## Explanation of Values
 
-### Hold First Jump
+### Initial Jump Duration
 
 How long you held the jump bottom on your initial jump.  
-The optimal value here is 200ms. See [RLBot - Jumping Physics](https://github.com/RLBot/RLBot/wiki/Jumping-Physics).
+The optimal value for fast aerials is 200ms. See [RLBot - Jumping Physics](https://github.com/RLBot/RLBot/wiki/Jumping-Physics).
 
 ### Time to Double Jump
 
 How long it took you to press the jump button a second time after letting go of it.  
-Faster is better.
+Faster is generally better.
+
+### Total Jump Duration
+
+How long it took you to press the jump button a second time after pressing it initially.  
+`Total Jump Duration = Initial Jump Duration + Time to Double Jump`  
+This metric is useful when practicing faster mechanics like speed-flips or wall-dashes.
 
 ### Pitch Up Between Jumps
 

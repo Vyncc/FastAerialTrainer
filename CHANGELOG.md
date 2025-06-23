@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.6.0
+
+- Added markers for each n-th tick in the pitch graph.
+- Renamed _Hold First Jump_ to _Initial Jump Duration_.
+- Added _Total Jump Duration_ metric, which is _Initial Jump Duration + Time to Double Jump_.
+  This metric is helpful when practicing fast-jumping mechanics like speed-flips or wall-dashes, where you don't care about the two separate components.
+- Don't clear the double-jump metrics when timed-out to allow to see how long the jump would have been available.
+- Default success color is now green (since the blue color confused some users).
+- Visual improvement: Draw borders on top of the graphs to avoid visible overlap.
+
 ## 2.5.0
 
 - Allow configuring timings
