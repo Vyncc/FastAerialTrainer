@@ -31,6 +31,7 @@ constexpr auto GUI_DRAW_PITCH_HISTORY = "fast_aerial_trainer_gui_draw_pitch_hist
 constexpr auto GUI_SHOW_PITCH_DOWN_IN_HISTORY = "fast_aerial_trainer_gui_show_pitch_down_in_history";
 constexpr auto GUI_DRAW_BOOST_HISTORY = "fast_aerial_trainer_gui_draw_boost_history";
 constexpr auto GUI_SHOW_FIRST_INPUT_WARNING = "fast_aerial_trainer_gui_first_input_warning";
+constexpr auto GUI_TICKS_PER_MARKER = "fast_aerial_trainer_gui_ticks_per_marker";
 
 struct InputHistoryItem
 {
@@ -120,6 +121,7 @@ class FastAerialTrainer : public BakkesMod::Plugin::BakkesModPlugin, public Sett
 	bool GuiShowPitchDownInHistory = false;
 	bool GuiShowBoostHistory = true;
 	bool GuiShowFirstInputWarning = true;
+	int GuiTicksPerMarker = 0;
 
 
 	// Methods

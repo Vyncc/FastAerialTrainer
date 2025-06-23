@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "FastAerialTrainer.h"
 
 static bool ColorPicker(const char* label, LinearColor& color)
@@ -32,7 +32,7 @@ void FastAerialTrainer::RenderSettings()
 	if (ImGui::DragFloat("Record After Double Jump", &RecordingAfterDoubleJump, 0.005f, 0, FLT_MAX, "%.1f seconds"))
 		cvarManager->getCvar(RECORD_AFTER_DOUBLE_JUMP).setValue(RecordingAfterDoubleJump);
 	if (ImGui::IsItemHovered())
-		ImGui::SetTooltip("Sets how long after the double jump the input recording should stop.");
+		ImGui::SetTooltip("Input recording duration after double jump input. Relevant for pitch and boost history graphs.\nDrag or ctrl-click to edit.");
 
 	if (PercentageSlider("GUI Position X", GuiPositionRelative.X))
 		cvarManager->getCvar(GUI_POSITION_RELATIVE_X).setValue(GuiPositionRelative.X);
@@ -65,6 +65,16 @@ void FastAerialTrainer::RenderSettings()
 
 	if (ImGui::Checkbox("Show First Input Warning in Custom Training", &GuiShowFirstInputWarning))
 		cvarManager->getCvar(GUI_SHOW_FIRST_INPUT_WARNING).setValue(GuiShowFirstInputWarning);
+
+	if (ImGui::DragInt("Add a marker every n-th game-tick", &GuiTicksPerMarker, 0.02f, 0, 120, ("%d ticks (approx. " + std::to_string((int)std::round(GuiTicksPerMarker / 120.f * 1000.f)) + " ms)").c_str()))
+		cvarManager->getCvar(GUI_TICKS_PER_MARKER).setValue(GuiTicksPerMarker);
+	if(ImGui::IsItemHovered())
+		ImGui::SetTooltip("Set to 0 to disable.\nDrag or ctrl-click to edit.");
+
+	SpacedSeparator();
+
+	ImGui::Text("Theme / Colors");
+	ImGui::Spacing();
 
 	if (ColorPicker("Border and Text Color", GuiColorBorder))
 		cvarManager->getCvar(GUI_BORDER_COLOR).setValue(GuiColorBorder);
@@ -150,7 +160,7 @@ void FastAerialTrainer::RenderRangePicker(RangeList& rangeList, const char* cvar
 			cvarManager->getCvar(cvar).setValue(rangeList.ValuesToString());
 		}
 		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("Drag or ctrl-click to edit");
+			ImGui::SetTooltip("Drag or ctrl-click to edit.");
 	}
 
 	ImGui::Spacing();

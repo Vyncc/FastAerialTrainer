@@ -85,6 +85,7 @@ void FastAerialTrainer::onLoad()
 	registerBoolCvar(GUI_SHOW_PITCH_DOWN_IN_HISTORY, GuiShowPitchDownInHistory);
 	registerBoolCvar(GUI_DRAW_BOOST_HISTORY, GuiShowBoostHistory);
 	registerBoolCvar(GUI_SHOW_FIRST_INPUT_WARNING, GuiShowFirstInputWarning);
+	registerIntCvar(GUI_TICKS_PER_MARKER, GuiTicksPerMarker);
 	registerColorCvar(GUI_BORDER_COLOR, GuiColorBorder);
 	registerColorCvar(GUI_BACKGROUND_COLOR, GuiColorBackground);
 	registerColorCvar(GUI_BACKDROP_COLOR, GuiColorBackdrop);
@@ -423,7 +424,7 @@ static void DrawCenteredText(CanvasWrapper canvas, std::string text, float fontS
 
 void FastAerialTrainer::DrawPitchHistory(CanvasWrapper& canvas, Vector2F position)
 {
-	float borderWidth = 2;
+	float borderWidth = 2; // Used in `CanvasWrapper::DrawBox()`. Can't be configured...
 	float textWidth = 45 * FontSize();
 	Vector2F topLeft = position + Vector2F{ borderWidth, 0 };
 	Vector2F innerBoxSize = Vector2F{ GuiSize, GuiSize / 10 };
@@ -450,10 +451,12 @@ void FastAerialTrainer::DrawPitchHistory(CanvasWrapper& canvas, Vector2F positio
 		canvas.DrawLine(start, end, borderWidth);
 	}
 
+	// Draw the pitch input graph.
+
 	canvas.SetColor(GuiPitchHistoryColor);
 	auto FillTriangle = [&](Vector2F p1, Vector2F p2, Vector2F p3)
 		{
-			if (p1.Y == p2.Y && p2.Y == p3.Y) 
+			if (p1.Y == p2.Y && p2.Y == p3.Y)
 				return;
 
 			transparentTriangle->Render(
@@ -533,6 +536,8 @@ void FastAerialTrainer::DrawPitchHistory(CanvasWrapper& canvas, Vector2F positio
 		}
 	}
 
+	// Highlight the jump input.
+
 	for (int i = 0; i < historySize; i++)
 	{
 		auto& input = InputHistory[i];
@@ -544,6 +549,21 @@ void FastAerialTrainer::DrawPitchHistory(CanvasWrapper& canvas, Vector2F positio
 		Vector2F start = topLeft + Vector2F{ (float)i / historySize * innerBoxSize.X, 0.f };
 		Vector2F end = start + Vector2F{ 0, innerBoxSize.Y };
 		canvas.DrawLine(start, end, 2 * borderWidth);
+	}
+
+	// Draw markers for every n-th tick.
+
+	if (GuiTicksPerMarker > 0)
+	{
+		auto markerHeight = 0.2f;
+
+		for (int i = GuiTicksPerMarker; i < historySize; i += GuiTicksPerMarker)
+		{
+			canvas.SetColor(GuiColorBorder);
+			Vector2F start = topLeft + Vector2F{ (float)i / historySize * innerBoxSize.X, (1 - markerHeight) * innerBoxSize.Y };
+			Vector2F end = start + Vector2F{ 0, markerHeight * innerBoxSize.Y };
+			canvas.DrawLine(start, end, borderWidth);
+		}
 	}
 }
 
