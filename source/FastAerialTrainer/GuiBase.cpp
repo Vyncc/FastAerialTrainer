@@ -3,7 +3,7 @@
 
 std::string SettingsWindowBase::GetPluginName()
 {
-	return "FastAerialTrainer";
+	return "Fast Aerial Trainer";
 }
 
 void SettingsWindowBase::SetImGuiContext(uintptr_t ctx)

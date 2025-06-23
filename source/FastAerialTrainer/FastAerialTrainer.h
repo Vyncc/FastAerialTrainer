@@ -98,7 +98,7 @@ class FastAerialTrainer : public BakkesMod::Plugin::BakkesModPlugin, public Sett
 	LinearColor GuiColorBorder = LinearColor(255, 255, 255, 255);
 	LinearColor GuiColorBackground = LinearColor(255, 255, 255, 127);
 	LinearColor GuiColorBackdrop = LinearColor(127, 127, 127, 0);
-	LinearColor GuiColorSuccess = LinearColor(0, 0, 255, 210);
+	LinearColor GuiColorSuccess = LinearColor(0, 255, 0, 210);
 	LinearColor GuiColorWarning = LinearColor(255, 255, 0, 210);
 	LinearColor GuiColorFailure = LinearColor(255, 0, 0, 210);
 	RangeList JumpDurationRanges = RangeList(
