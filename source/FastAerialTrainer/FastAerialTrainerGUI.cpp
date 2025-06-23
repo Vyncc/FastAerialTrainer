@@ -29,7 +29,7 @@ void FastAerialTrainer::RenderSettings()
 	if (ImGui::Checkbox("Enable Plugin", &PluginEnabled))
 		cvarManager->getCvar(PLUGIN_ENABLED).setValue(PluginEnabled);
 
-	if (ImGui::DragFloat("Record After Double Jump", &RecordingAfterDoubleJump, 0.005f, 0, FLT_MAX, "%.1f seconds"))
+	if (ImGui::DragFloat("Record After Double Jump", &RecordingAfterDoubleJump, 0.005f, 0, FLT_MAX, "%.2f seconds"))
 		cvarManager->getCvar(RECORD_AFTER_DOUBLE_JUMP).setValue(RecordingAfterDoubleJump);
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip("Input recording duration after double jump input. Relevant for pitch and boost history graphs.\nDrag or ctrl-click to edit.");
@@ -51,7 +51,10 @@ void FastAerialTrainer::RenderSettings()
 	if (ImGui::Checkbox("Show Double Jump Timing", &GuiShowDoubleJump))
 		cvarManager->getCvar(GUI_SHOW_DOUBLE_JUMP).setValue(GuiShowDoubleJump);
 
-	if (ImGui::Checkbox("Show Pitch Up Amount Between Jumps", &GuiShowPitchAmount))
+	if (ImGui::Checkbox("Show Total Jump Timing", &GuiShowTotalJump))
+		cvarManager->getCvar(GUI_SHOW_TOTAL_JUMP).setValue(GuiShowTotalJump);
+
+	if (ImGui::Checkbox("Show Pitch Up Amount While Jumping", &GuiShowPitchAmount))
 		cvarManager->getCvar(GUI_SHOW_PITCH_AMOUNT).setValue(GuiShowPitchAmount);
 
 	if (ImGui::Checkbox("Draw Pitch History", &GuiShowPitchHistory))
@@ -127,6 +130,23 @@ void FastAerialTrainer::RenderSettings()
 	RenderRangePicker(
 		DoubleJumpDurationRanges,
 		GUI_DOUBLE_JUMP_RANGES,
+		{
+			"Success Low",
+			"Success High",
+			"Warning High",
+			"Failure High"
+		}
+	);
+	ImGui::PopID();
+
+	SpacedSeparator();
+
+	ImGui::PushID("TotalJump");
+	ImGui::Text("Total Jump Timing");
+	ImGui::Spacing();
+	RenderRangePicker(
+		TotalJumpDurationRanges,
+		GUI_TOTAL_JUMP_RANGES,
 		{
 			"Success Low",
 			"Success High",

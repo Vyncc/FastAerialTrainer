@@ -80,6 +80,7 @@ void FastAerialTrainer::onLoad()
 	registerPercentCvar(GUI_PREVIEW_OPACTIY, GuiColorPreviewOpacity);
 	registerBoolCvar(GUI_SHOW_FIRST_JUMP, GuiShowFirstJump);
 	registerBoolCvar(GUI_SHOW_DOUBLE_JUMP, GuiShowDoubleJump);
+	registerBoolCvar(GUI_SHOW_TOTAL_JUMP, GuiShowTotalJump);
 	registerBoolCvar(GUI_SHOW_PITCH_AMOUNT, GuiShowPitchAmount);
 	registerBoolCvar(GUI_DRAW_PITCH_HISTORY, GuiShowPitchHistory);
 	registerBoolCvar(GUI_SHOW_PITCH_DOWN_IN_HISTORY, GuiShowPitchDownInHistory);
@@ -95,6 +96,7 @@ void FastAerialTrainer::onLoad()
 	registerColorCvar(GUI_COLOR_HISTORY, GuiPitchHistoryColor);
 	registerRangeListCvar(GUI_JUMP_RANGES, JumpDurationRanges);
 	registerRangeListCvar(GUI_DOUBLE_JUMP_RANGES, DoubleJumpDurationRanges);
+	registerRangeListCvar(GUI_TOTAL_JUMP_RANGES, TotalJumpDurationRanges);
 
 	gameWrapper->RegisterDrawable(
 		[this](CanvasWrapper canvas)
@@ -245,12 +247,13 @@ void FastAerialTrainer::OnTick(CarWrapper car, ControllerInput* input)
 
 	if (HoldingFirstJump)
 		TimeBetweenFirstAndDoubleJump = 0;
-	else if (DoubleJumpPressedTime > HoldFirstJumpStopTime)
+	else if (DoubleJumpPressedTime >= HoldFirstJumpStopTime)
 		TimeBetweenFirstAndDoubleJump = DoubleJumpPressedTime - HoldFirstJumpStopTime;
 	else if (DoubleJumpPossible)
 		TimeBetweenFirstAndDoubleJump = now - HoldFirstJumpStopTime;
-	else
-		TimeBetweenFirstAndDoubleJump = 0;
+
+	if (HoldingFirstJump || DoubleJumpPressedTime >= HoldFirstJumpStopTime || DoubleJumpPossible)
+		TotalJumpDuration = HoldFirstJumpDuration + TimeBetweenFirstAndDoubleJump;
 
 	// We either landed or have to land for another double jump. No need to record things further.
 	if (!car.HasFlip() || (car.IsOnGround() && !car.GetbJumped()))
@@ -311,6 +314,16 @@ void FastAerialTrainer::RenderCanvas(CanvasWrapper canvas)
 			canvas, "Time to Double Jump: ", TimeBetweenFirstAndDoubleJump * 1000,
 			position, BarSize(),
 			GuiColorBackground, DoubleJumpDurationRanges
+		);
+		position += Offset();
+	}
+
+	if (GuiShowTotalJump)
+	{
+		DrawBar(
+			canvas, "Total Jump Duration: ", TotalJumpDuration * 1000,
+			position, BarSize(),
+			GuiColorBackground, TotalJumpDurationRanges
 		);
 		position += Offset();
 	}

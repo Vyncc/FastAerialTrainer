@@ -24,8 +24,10 @@ constexpr auto GUI_COLOR_FAILURE = "fast_aerial_trainer_gui_color_failure";
 constexpr auto GUI_COLOR_HISTORY = "fast_aerial_trainer_gui_color_history";
 constexpr auto GUI_JUMP_RANGES = "fast_aerial_trainer_gui_jump_ranges";
 constexpr auto GUI_DOUBLE_JUMP_RANGES = "fast_aerial_trainer_gui_double_jump_ranges";
+constexpr auto GUI_TOTAL_JUMP_RANGES = "fast_aerial_trainer_gui_total_jump_ranges";
 constexpr auto GUI_SHOW_FIRST_JUMP = "fast_aerial_trainer_gui_show_first_jump";
 constexpr auto GUI_SHOW_DOUBLE_JUMP = "fast_aerial_trainer_gui_show_double_jump";
+constexpr auto GUI_SHOW_TOTAL_JUMP = "fast_aerial_trainer_gui_show_total_jump";
 constexpr auto GUI_SHOW_PITCH_AMOUNT = "fast_aerial_trainer_gui_show_pitch_amount";
 constexpr auto GUI_DRAW_PITCH_HISTORY = "fast_aerial_trainer_gui_draw_pitch_history";
 constexpr auto GUI_SHOW_PITCH_DOWN_IN_HISTORY = "fast_aerial_trainer_gui_show_pitch_down_in_history";
@@ -58,11 +60,16 @@ class FastAerialTrainer : public BakkesMod::Plugin::BakkesModPlugin, public Sett
 	bool HoldingFirstJump = false;
 	float HoldFirstJumpStartTime = 0;
 	float HoldFirstJumpStopTime = 0;
+	// How long the jump input is held when leaving the ground.
 	float HoldFirstJumpDuration = 0;
 
 	bool DoubleJumpPossible = false;
 	float DoubleJumpPressedTime = 0;
+	// How long it took to press the jump input again after releasing it.
 	float TimeBetweenFirstAndDoubleJump = 0;
+	// How long it took to press the jump input again after pressing it initially.
+	// `HoldFirstJumpDuration + TimeBetweenFirstAndDoubleJump`
+	float TotalJumpDuration = 0;
 	float PitchUpBetweenJumps = 0;
 	float TicksBetweenJumps = 0;
 
@@ -112,10 +119,19 @@ class FastAerialTrainer : public BakkesMod::Plugin::BakkesModPlugin, public Sett
 			 &GuiColorFailure
 		}
 	);
+	RangeList TotalJumpDurationRanges = RangeList(
+		{ 0, 300, 400, 500 },
+		{
+			&GuiColorSuccess,
+			&GuiColorWarning,
+			&GuiColorFailure
+		}
+	);
 	LinearColor GuiPitchHistoryColor = LinearColor(255, 255, 255, 239);
 
 	bool GuiShowFirstJump = true;
 	bool GuiShowDoubleJump = true;
+	bool GuiShowTotalJump = false;
 	bool GuiShowPitchAmount = true;
 	bool GuiShowPitchHistory = true;
 	bool GuiShowPitchDownInHistory = false;
