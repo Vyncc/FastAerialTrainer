@@ -1,4 +1,3 @@
-.vs/
-build/
-plugins/
-temps.txt
+/source/.vs
+/source/build
+/source/plugins
